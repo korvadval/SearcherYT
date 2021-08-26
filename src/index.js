@@ -44,7 +44,6 @@ class ItemContent extends React.Component{
         );
     }
 }
-
 class Content extends React.Component {
     constructor(props){
         super(props);
@@ -149,7 +148,6 @@ class Content extends React.Component {
             }
         }
     }
-
     render() {
         return (
             <div className="contentMain">
