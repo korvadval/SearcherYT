@@ -7,7 +7,7 @@ body {
   cursor: default;
 }
 .main {
-  background-color: aqua;
+  background-color: #a6a0e094;
   min-height: 100%;
   width: 100%;
   position: absolute;
@@ -38,7 +38,6 @@ body {
   align-items: center;
 }
 .input {
-  background-color: #d3e7e6;
   border-style: outset;
   border-width: 1px;
   border-color: rgb(153, 156, 160);
@@ -50,15 +49,16 @@ body {
   padding-left: 5px;
 }
 .buttonLogin {
-  background-color: #bccccb;
+  background-color: #9996c0;
   margin-top: 10px;
   width: 100%;
+  height: 25px;
   border-width: 2px;
   border-color: rgb(153, 156, 160);
   border-radius: 3px;
 }
 .contentMain {
-  background-color: aqua;
+  background-color: #a6a0e094;
   width: 100%;
   height: 100%;
   position: absolute;
@@ -94,7 +94,7 @@ body {
   padding-top: 30px;
   border-width: 0 0 4px 0;
   border-style: inset;
-  border-color: rgb(86, 137, 231);
+  border-color: rgb(65 99 162);
 }
 .buttonsPanel {
   display: flex;
@@ -296,4 +296,61 @@ body {
   flex-direction: row;
   justify-content: space-between;
   margin: 10px 0 0 0;
+}
+.listOfFavorites {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+}
+.itemFavoritesHover {
+  width: 100%;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
+  background-color: #0000000d;
+  border-style: groove;
+  border-width: 0 1px 1px 0;
+  font-size: x-large;
+}
+.itemFavorites {
+  background-color: transparent;
+  margin-bottom: 10px;
+  border: 0;
+  display: flex;
+  font-size: x-large;
+}
+.itemFavoritesName {
+  padding-left: 10px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.itemFavoritesPanelToDoHover {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  padding-right: 10px;
+  justify-content: flex-end;
+}
+.itemFavoritesPanelToDo {
+  display: none;
+}
+.itemFavoritesEdit {
+  font-size: medium;
+  color: #2c4194;
+  align-self: center;
+  margin-right: 15px;
+}
+.itemFavoritesDelete {
+  font-size: medium;
+  color: #bd5555;
+  align-self: center;
+}
+.itemFavoritesFind {
+  font-size: medium;
+  color: #145f10;
+  align-self: center;
+  margin-right: 15px;
 }

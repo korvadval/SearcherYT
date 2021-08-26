@@ -12,7 +12,7 @@ import { faTh, faList, faHeart, faGlassWhiskey } from '@fortawesome/free-solid-s
 import { findRenderedDOMComponentWithClass } from 'react-dom/cjs/react-dom-test-utils.production.min';
 import { forEach } from 'async';
 
-let API_KEY = "AIzaSyD9S5XQv6Ze52mZssvuDbttLUsAzopED_s";
+let API_KEY = "AIzaSyDNbqAYrxkk9nv7YzdHXsimoxO-w2WFnZQ";
 
 class ItemContent extends React.Component{
     constructor(props){
@@ -49,9 +49,14 @@ class RangeSlider extends React.Component{
             min:0
         }
     }
-
+    componentDidMount=()=>{
+        if(this.props.value){
+            this.setState({valueSlider:this.props.value})
+        }
+    }
     handleChange=(event)=>{
         this.setState({valueSlider:event.target.value})
+        this.props.onHandleChange(event.target.value)
     }
 
     handleSubmit=(event)=>{
@@ -89,16 +94,22 @@ class SelectField extends React.Component{
             value: "0"
         }
     }
+    componentDidMount=()=>{
+        if(this.props.value){
+            this.setState({value:this.props.value})
+        }
+    }
     handleChange=(event)=>{
-        this.setState({value: event.target.value});
+        this.setState({value: event.target.value})
+        this.props.onHandleChange(event.target.value)
     }
     render(){
         return(
             <select className="selectField" value={this.state.value} onChange={this.handleChange}>
-                <option value="0">Высота</option>
-                <option value="1">Ширина</option>
-                <option value="2">Глубина</option>
-                <option value="3">Угол</option>
+                <option value="0">По релевантности</option>
+                <option value="1">По дате загрузки</option>
+                <option value="2">По числу просмотров</option>
+                <option value="3">По рейтингу</option>
             </select>
         );
     }
@@ -108,18 +119,44 @@ class FavoritesDialogView extends React.Component{
     constructor(props){
         super(props);
         this.state={
-            userAsk:""
+            userAsk:"",
+            name:"",
+            count:"25",
+            sort:"0"
         }
     }
     componentDidMount=()=>{
         this.setState({userAsk:this.props.ask})
+        if(this.props.name){
+            this.setState({name:this.props.name})
+        }
     }
-    handleChange=(event)=>{
+    handleChangeAsk=(event)=>{
         this.setState({userAsk:event.target.value})
+    }
+    handleChangeName=(event)=>{
+        this.setState({name:event.target.value})
+    }
+    handleChangeSort=(e)=>{
+        this.setState({sort:e})
+    }
+    handleChangeCount=(e)=>{
+        this.setState({count:e})
     }
     handleSubmit=(event)=>{
         event.preventDefault()
     }
+
+    handleOnClick=()=>{
+        if(this.props.mode=="save"){
+            this.props.putDataInLC(this.state.userAsk,this.state.name,this.state.sort,this.state.count) 
+        }
+        if(this.props.mode=="edit"){
+            this.props.editDataInLC(this.state.userAsk,this.state.name,this.state.sort,this.state.count) 
+        }
+        this.props.handleHide()        
+    }
+
     render(){
         return(
             <div className="mainDialogWindow">
@@ -130,33 +167,71 @@ class FavoritesDialogView extends React.Component{
                            type="text" 
                            id="ask"
                            value={this.state.userAsk}
-                           onChange={this.handleChange}
+                           onChange={this.props.mode=="edit"?this.handleChangeAsk:null}
                     />
                 </form>
                 <form onSubmit={this.handleSubmit} className="fieldDialogWindow">
                     <label className="labelDialogWindow">Название</label>
                     <input className="inputDialogWindow"
                            type="text" 
-                           id="name" 
+                           id="name"
+                           value={this.state.name}
+                           onChange={this.handleChangeName} 
                     />
                 </form>
                 <div className="fieldDialogWindow">
                     <label className="labelDialogWindow">Сортировать по</label>
-                    <SelectField />
+                    <SelectField value={this.props.sort?this.props.sort:0} onHandleChange={this.handleChangeSort}/>
                 </div>
                 <div className="fieldDialogWindow">
                     <label className="labelDialogWindow">Количество</label>
-                    <RangeSlider />
+                    <RangeSlider value={this.props.count?this.props.count:25} onHandleChange={this.handleChangeCount}/>
                 </div>
                 <div className="buttonsFieldDialogWindow">
                     <button className="buttonDialogWindow"
                             onClick={this.props.handleHide}
                     >Не сохранять</button>
                     <button className="buttonDialogWindow"
-                            onClick={()=>this.props.putDataInLC(this.state.userAsk,"my_search","none","25")}      ////////////////////////////////////////////////////  
+                            onClick={this.handleOnClick}      
                     >Сохранить</button>
                 </div>
             </div>
+        );
+    }
+}
+
+class ItemFavorites extends React.Component{
+    constructor(props){
+        super(props);
+        this.state={
+            isHover:false
+        }
+    }
+
+    buttonFind=()=>{
+        this.props.findFavoritesById(this.props.id)
+    }
+    buttonEdit=()=>{
+        this.props.setEditingId(this.props.id)
+        this.props.showDialog()
+    }
+    buttonDelete=()=>{
+        this.props.delete(this.props.id)
+    }
+
+    render(){
+        return(
+            <button className={this.state.isHover?"itemFavoritesHover":"itemFavorites"}
+                 onMouseEnter={()=>this.setState({isHover:true})}
+                 onMouseLeave={()=>this.setState({isHover:false})}
+            >   
+                <div className="itemFavoritesName">{this.props.name}</div>
+                <div className={this.state.isHover?"itemFavoritesPanelToDoHover":"itemFavoritesPanelToDo"}> 
+                    <div onClick={this.buttonFind} className="itemFavoritesFind">Найти</div> 
+                    <div onClick={this.buttonEdit} className="itemFavoritesEdit">Изменить</div>
+                    <div onClick={this.buttonDelete} className="itemFavoritesDelete">Удалить</div>                 
+                </div>
+            </button>
         );
     }
 }
@@ -169,31 +244,56 @@ class Content extends React.Component {
             videos: [],
             userAsk: "",
             typeView: "grid",
-            isOpened: false
+            isOpenedSave: false,
+            isOpenedEdit: false,
+            editingFavoriteId: null,
+            deleteFavoriteId:null,
+            editingFavoriteAsk: null,
+            editingFavoriteSort: null,
+            editingFavoriteName: null,
+            editingFavoriteCount: null,
         }
     }
     clickButton=(index)=>{
-        this.setState({clickedButton:index})
+        this.setState({clickedButton:index,isFavoriteReFind: false})
     }
 
     fillVideos=(videos)=>{
-        console.log(videos)
-        this.setState({videos:videos})
+        this.setState({videos:videos,isFavoriteReFind: false})
     }
 
     getAsk=(term)=>{
-        this.setState({userAsk:term})
+        this.setState({userAsk:term,isFavoriteReFind: false})
     }
 
-    handleShow=()=> { this.setState({ isOpened: true  }) }
-    handleHide=()=> { this.setState({ isOpened: false }) }
+    handleShowSave=()=> { this.setState({ isOpenedSave: true  }) }
+    handleHideSave=()=> { this.setState({ isOpenedSave: false }) }
+    handleShowEdit=()=>{ this.setState({ isOpenedEdit: true })}
+    handleHideEdit=()=> { this.setState({ isOpenedEdit: false }) }
     
+    setEditingFavoriteId=(id)=>{
+        let name,ask,sort,count
+        let usersBuf = JSON.parse(localStorage.getItem("users"))
+        usersBuf.forEach(el => {
+            if(el.login==localStorage.getItem("token")){
+                name=el.favorites[id].name
+                ask=el.favorites[id].ask
+                sort=el.favorites[id].sort
+                count=el.favorites[id].count
+            }
+        })
+        this.setState({ editingFavoriteId:id,
+                        editingFavoriteAsk:ask,
+                        editingFavoriteName:name,
+                        editingFavoriteSort:sort,
+                        editingFavoriteCount:count
+        })
+    }
     putDataInLC=(ask,name,sort,count)=>{ 
 
         let usersBuf = JSON.parse(localStorage.getItem("users"))
         usersBuf.forEach(el => {
-            if(el.login==localStorage.getItem("token"))
-            {
+            if(el.login==localStorage.getItem("token")){
                 let favorite={
                     name:name,
                     ask:ask,
@@ -205,9 +305,74 @@ class Content extends React.Component {
             localStorage.setItem("users",JSON.stringify(usersBuf))
         });
     }
-    
+    editDataInLC=(ask,name,sort,count)=>{ 
+        let usersBuf = JSON.parse(localStorage.getItem("users"))
+        usersBuf.forEach(el => {
+            if(el.login==localStorage.getItem("token")){
+                let favorite={
+                    name:name,
+                    ask:ask,
+                    sort:sort,
+                    count:count
+                }
+                el.favorites[this.state.editingFavoriteId]=favorite
+            }
+            localStorage.setItem("users",JSON.stringify(usersBuf))
+        });
+    }
+    deleteDataInLC=(id)=>{ 
+        
+        let usersBuf = JSON.parse(localStorage.getItem("users"))
+        usersBuf.forEach(el => {
+            if(el.login==localStorage.getItem("token")){
+                el.favorites.splice(id, 1);
+                this.setState({deleteFavoriteId:null})
+            }
+            localStorage.setItem("users",JSON.stringify(usersBuf))
+        });
+    }
+    findFavoritesById=(id)=>{
+        let usersBuf = JSON.parse(localStorage.getItem("users"))
+        let res, ask
+        usersBuf.forEach(el => {
+            if(el.login==localStorage.getItem("token")){
+                this.setState({clickedButton: 0,
+                               userAsk:el.favorites[id].ask})
+                res=el.favorites[id].count
+                ask=el.favorites[id].ask
+            }
+        });
+        searcherYT ({key: API_KEY, term: ask, res: res}, (videos) => { 
+            this.setState({videos:videos})
+        })
+    }
+    getFavorites=()=>{
+        let listOfFavorites=[]
+        let usersBuf = JSON.parse(localStorage.getItem("users"))
+        usersBuf.forEach(el => {
+            if(el.login==localStorage.getItem("token")){
+                    let i=0
+                    el.favorites.forEach(element => {
+                        let item=<ItemFavorites id={i}
+                                                name={element.name}
+                                                setEditingId={this.setEditingFavoriteId}
+                                                showDialog={this.handleShowEdit}
+                                                delete={this.deleteDataInLC}
+                                                findFavoritesById={this.findFavoritesById}
+
+                                />
+                    listOfFavorites.push(item)
+                    i=i+1;
+                });
+                
+            }
+        });
+        return listOfFavorites
+    }
+
     renderItems(){
-        let items = []
+        let items=[]
+        console.log(this.state.videos)
         this.state.videos.forEach(el => {
             items.push(<ItemContent 
                             id={el.id.videoId}
@@ -215,23 +380,24 @@ class Content extends React.Component {
                             title={el.snippet.title}
                             typeView={this.state.typeView}
                             info={el.snippet.channelTitle}
-                      />)
+                    />)
         });
-        for(let i=0;i<12;i++){
-            items.push(<ItemContent
-                            id={i}
-                            preview={"https://i.ytimg.com/vi/u4XsdS5cRpA/hqdefault.jpg?sqp=-oaymwEjCOADEI4CSFryq4qpAxUIARUAAAAAGAElAADIQj0AgKJDeAE=&rs=AOn4CLCyTvsDcVN87g4v3vF7M9br5xFTzA"}
-                            title={"УШЕЛ ОДИН жить в ДОМ ПОД ЗЕМЛЕЙ | МЕДВЕДИЦА ПРИШЛА С МЕДВЕЖОНКОМ | КРЫША НЕ ВЫДЕРЖАЛА"}
-                            typeView={this.state.typeView}
-                            info={"ЛЕСНЫЕ \n1 830 630 просмотров"}
-                      />)
-        }
+        
+        // for(let i=0;i<12;i++){
+        //     items.push(<ItemContent
+        //                     id={i}
+        //                     preview={"https://i.ytimg.com/vi/u4XsdS5cRpA/hqdefault.jpg?sqp=-oaymwEjCOADEI4CSFryq4qpAxUIARUAAAAAGAElAADIQj0AgKJDeAE=&rs=AOn4CLCyTvsDcVN87g4v3vF7M9br5xFTzA"}
+        //                     title={"УШЕЛ ОДИН жить в ДОМ ПОД ЗЕМЛЕЙ | МЕДВЕДИЦА ПРИШЛА С МЕДВЕЖОНКОМ | КРЫША НЕ ВЫДЕРЖАЛА"}
+        //                     typeView={this.state.typeView}
+        //                     info={"ЛЕСНЫЕ \n1 830 630 просмотров"}
+        //               />)
+        // }
 
         return items
     }
     renderContent=()=>{
         if(this.state.clickedButton==0){
-            if(this.state.videos.length){
+            if(this.state.videos.length==0){
                 return(
                     <div className="searcherPanel">
                         <h2>Поиск видео</h2>
@@ -247,7 +413,7 @@ class Content extends React.Component {
                             <Searcher fillVideos={this.fillVideos} 
                                       getAsk={this.getAsk}
                             />
-                            <FontAwesomeIcon onClick={this.handleShow} 
+                            <FontAwesomeIcon onClick={this.handleShowSave} 
                                 className="favoritesButton"
                                 icon={faHeart} />
                             <div className="filterPanel">
@@ -270,12 +436,14 @@ class Content extends React.Component {
                             <div className={this.state.typeView=="grid"?"videoPanelGrid":"videoPanelList"}>
                                 {this.renderItems()}
                             </div>
-                            {this.state.isOpened ? 
+                            {this.state.isOpenedSave ? 
                             <Dialog 
                                 content={<FavoritesDialogView header="Сохранить запрос" 
                                                               ask={this.state.userAsk} 
-                                                              handleHide={this.handleHide}
-                                                              putDataInLC={this.putDataInLC}/>}
+                                                              handleHide={this.handleHideSave}
+                                                              putDataInLC={this.putDataInLC}
+                                                              mode="save"
+                                        />}
                             />
                             :  null }
                     </div>
@@ -284,7 +452,25 @@ class Content extends React.Component {
         }
         if(this.state.clickedButton==1){
             return(
-                <div>here we are</div>
+                <div className="listOfFavorites">
+                    <h2>Избранное</h2>
+                    {this.getFavorites()}
+                
+                    {this.state.isOpenedEdit ? 
+                        <Dialog 
+                            content={<FavoritesDialogView header="Редактировать запрос" 
+                                                          ask={this.state.editingFavoriteAsk}
+                                                          name={this.state.editingFavoriteName}
+                                                          count={this.state.editingFavoriteCount}
+                                                          sort={this.state.editingFavoriteSort} 
+                                                          handleHide={this.handleHideEdit}
+                                                          editDataInLC={this.editDataInLC}
+                                                          mode="edit"
+                                    />}
+                                                          
+                        />
+                    :  null }
+                </div>
             )
         }
     }
@@ -299,9 +485,9 @@ class Content extends React.Component {
                             <div className={this.state.clickedButton==1?"buttonClicked":"button"}onClick={(()=>this.clickButton(1))}>Избранное</div>
                         </div>
                         <div className="rightButtons">
-                            <div className={this.state.clickedButton==2?"buttonClicked":"button"} onClick={(()=>{
+                            <div className={this.state.clickedButton==2?"buttonClicked":"button"} onClick={()=>{
                                                                                                                     localStorage.removeItem("token") 
-                                                                                                                    this.props.isUnloggined()})}>Выйти</div>
+                                                                                                                    this.props.isUnloggined()}}>Выйти</div>
                         </div>
                     </div>
                 </div>
@@ -319,14 +505,13 @@ class Searcher extends React.Component{
         this.state={
         }
     }
-
-    videoSearch = (term) => { 
+    videoSearch = (term) => {
         this.props.getAsk(term)
-        // searcherYT ({key: API_KEY, term: term, res: 12}, (videos) => { 
-        //     this.props.fillVideos(videos)
-        // }) 
-    }
-
+        searcherYT ({key: API_KEY, term: term, res: 12}, (videos) => { 
+            this.props.fillVideos(videos)
+        })
+    } 
+    
     render() {
         return (
             <SearchInput videoSearch={this.videoSearch}/>
