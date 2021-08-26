@@ -8,18 +8,12 @@ import YouTube from 'react-youtube';
 import Dialog from './Dialog';
 
 import { FontAwesomeIcon }      from '@fortawesome/react-fontawesome'
-import { faTh, faList, faHeart } from '@fortawesome/free-solid-svg-icons'
+import { faTh, faList, faHeart, faGlassWhiskey } from '@fortawesome/free-solid-svg-icons'
+import { findRenderedDOMComponentWithClass } from 'react-dom/cjs/react-dom-test-utils.production.min';
+import { forEach } from 'async';
 
 let API_KEY = "AIzaSyD9S5XQv6Ze52mZssvuDbttLUsAzopED_s";
-let users_list = []
-localStorage.setItem('users', users_list)
-// let user = {
-//     username: this.props.userName,
-//     favorites: []
-// }
-// let bufUsers = localStorage.getItem("users")
-//                 bufUsers.push(user)
-//                 localStorage.setItem("users", bufUsers)
+
 class ItemContent extends React.Component{
     constructor(props){
         super(props);
@@ -44,6 +38,129 @@ class ItemContent extends React.Component{
         );
     }
 }
+
+class RangeSlider extends React.Component{
+    constructor(props){
+        super(props);
+        this.state={
+            valueSlider: 25, 
+            label: '',
+            max: 50,
+            min:0
+        }
+    }
+
+    handleChange=(event)=>{
+        this.setState({valueSlider:event.target.value})
+    }
+
+    handleSubmit=(event)=>{
+        event.preventDefault()
+        if(event.target.children[1].value>this.props.max){
+            this.setState({valueSlider: this.props.max})
+        }
+    }
+
+    render(){
+        return (
+                <form onSubmit={this.handleSubmit} className="rangeSliderField" >
+                    <input className="rangeSlider" 
+                        type="range" 
+                        min={this.state.min} max={this.state.max} value={this.state.valueSlider} 
+                        onChange={this.handleChange}
+                        id="myRange"
+                    />
+                    <input pattern="[0-9]*"
+                           className="sliderValue"
+                           type="text"
+                           value={this.state.valueSlider}
+                           onChange={this.handleChange}
+                           id="sliderValue"
+                    />
+                </form>
+        );
+    }
+}
+
+class SelectField extends React.Component{
+    constructor(props){
+        super(props);
+        this.state={
+            value: "0"
+        }
+    }
+    handleChange=(event)=>{
+        this.setState({value: event.target.value});
+    }
+    render(){
+        return(
+            <select className="selectField" value={this.state.value} onChange={this.handleChange}>
+                <option value="0">Высота</option>
+                <option value="1">Ширина</option>
+                <option value="2">Глубина</option>
+                <option value="3">Угол</option>
+            </select>
+        );
+    }
+}
+
+class FavoritesDialogView extends React.Component{
+    constructor(props){
+        super(props);
+        this.state={
+            userAsk:""
+        }
+    }
+    componentDidMount=()=>{
+        this.setState({userAsk:this.props.ask})
+    }
+    handleChange=(event)=>{
+        this.setState({userAsk:event.target.value})
+    }
+    handleSubmit=(event)=>{
+        event.preventDefault()
+    }
+    render(){
+        return(
+            <div className="mainDialogWindow">
+                <h2 className="headerDialogWindow">{this.props.header}</h2>
+                <form onSubmit={this.handleSubmit} className="fieldDialogWindow">
+                    <label className="labelDialogWindow">Запрос</label>
+                    <input className="inputDialogWindow"
+                           type="text" 
+                           id="ask"
+                           value={this.state.userAsk}
+                           onChange={this.handleChange}
+                    />
+                </form>
+                <form onSubmit={this.handleSubmit} className="fieldDialogWindow">
+                    <label className="labelDialogWindow">Название</label>
+                    <input className="inputDialogWindow"
+                           type="text" 
+                           id="name" 
+                    />
+                </form>
+                <div className="fieldDialogWindow">
+                    <label className="labelDialogWindow">Сортировать по</label>
+                    <SelectField />
+                </div>
+                <div className="fieldDialogWindow">
+                    <label className="labelDialogWindow">Количество</label>
+                    <RangeSlider />
+                </div>
+                <div className="buttonsFieldDialogWindow">
+                    <button className="buttonDialogWindow"
+                            onClick={this.props.handleHide}
+                    >Не сохранять</button>
+                    <button className="buttonDialogWindow"
+                            onClick={()=>this.props.putDataInLC(this.state.userAsk,"my_search","none","25")}      ////////////////////////////////////////////////////  
+                    >Сохранить</button>
+                </div>
+            </div>
+        );
+    }
+}
+
 class Content extends React.Component {
     constructor(props){
         super(props);
@@ -70,7 +187,25 @@ class Content extends React.Component {
 
     handleShow=()=> { this.setState({ isOpened: true  }) }
     handleHide=()=> { this.setState({ isOpened: false }) }
+    
+    putDataInLC=(ask,name,sort,count)=>{ 
 
+        let usersBuf = JSON.parse(localStorage.getItem("users"))
+        usersBuf.forEach(el => {
+            if(el.login==localStorage.getItem("token"))
+            {
+                let favorite={
+                    name:name,
+                    ask:ask,
+                    sort:sort,
+                    count:count
+                }
+                el.favorites.push(favorite)
+            }
+            localStorage.setItem("users",JSON.stringify(usersBuf))
+        });
+    }
+    
     renderItems(){
         let items = []
         this.state.videos.forEach(el => {
@@ -82,7 +217,6 @@ class Content extends React.Component {
                             info={el.snippet.channelTitle}
                       />)
         });
-
         for(let i=0;i<12;i++){
             items.push(<ItemContent
                             id={i}
@@ -95,7 +229,6 @@ class Content extends React.Component {
 
         return items
     }
-
     renderContent=()=>{
         if(this.state.clickedButton==0){
             if(this.state.videos.length){
@@ -139,13 +272,20 @@ class Content extends React.Component {
                             </div>
                             {this.state.isOpened ? 
                             <Dialog 
-                                content={<div>хуй</div>}
-                                handleHide={() => this.handleHide()}
+                                content={<FavoritesDialogView header="Сохранить запрос" 
+                                                              ask={this.state.userAsk} 
+                                                              handleHide={this.handleHide}
+                                                              putDataInLC={this.putDataInLC}/>}
                             />
                             :  null }
                     </div>
                 );
             }
+        }
+        if(this.state.clickedButton==1){
+            return(
+                <div>here we are</div>
+            )
         }
     }
     render() {
@@ -239,12 +379,35 @@ class LoginPass extends React.Component{
     }
     
     checkUser = () =>{
-        for(let i=0;i<this.props.users.length;i++){
-            if(this.props.users[i].login==this.state.userLogin &&
-               this.props.users[i].password==this.state.userPass){
+        let users=usersData.users;
+        for(let i=0;i<users.length;i++){
+            if(users[i].login==this.state.userLogin &&
+               users[i].password==this.state.userPass){
                 this.props.isLoginned();
+                localStorage.setItem("token", users[i].login)
                 
-                localStorage.setItem("token", Math.ceil(Math.random()*1000000))
+                if(!localStorage.getItem("users")){
+                    let users=[]
+                    localStorage.setItem("users",JSON.stringify(users))
+                }
+                let needAddToLC=true
+                let usersBuf = JSON.parse(localStorage.getItem("users"))
+                
+                usersBuf.forEach(el => {
+                    if(el.login==users[i].login){
+                        needAddToLC=false;
+                    }
+                });
+                if(usersBuf.length==0 ||needAddToLC){
+                    let user={
+                        login:users[i].login,
+                        favorites:[]
+                    }
+                    usersBuf.push(user)
+                    localStorage.setItem("users",JSON.stringify(usersBuf))
+                }
+
+                this.props.getLogin(users[i].login)
                 break;
             }
         }
@@ -327,13 +490,16 @@ class Main extends React.Component {
     constructor(props){
         super(props);
         this.state={
-            isLogin: false,  
+            isLogin: false, 
+            login:"" 
         }
     }
     isUnloggined=()=>{
         this.setState({isLogin:false});
     }
-
+    getLogin=(login)=>{
+        this.setState({login:login});
+    }
     isLoginned=()=>{
         this.setState({isLogin:true});
     }
@@ -341,7 +507,6 @@ class Main extends React.Component {
         this.setState({clickedButton:index});
     }
     draw(){
-        let users=usersData.users;
         if(localStorage.getItem("token")){
             return(
                 <Content isUnloggined={this.isUnloggined}/>
@@ -350,8 +515,8 @@ class Main extends React.Component {
             if(!this.state.isLogin){
                 return(
                     <div className="main">
-                    <LoginPass users={users}
-                            isLoginned={this.isLoginned}
+                    <LoginPass getLogin={this.getLogin}
+                               isLoginned={this.isLoginned}
                     />
                     </div>
                 );

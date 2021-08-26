@@ -37,8 +37,7 @@ class Dialog extends Component {
 
     ReactDOM.render(
        <div className="dialog-wrapper">
-          <div className="dialog-closeBtn" onClick={()=>this.props.handleHide()}><FontAwesomeIcon icon={faTimes} /></div>
-          <div className="dialog-shadow" onClick={()=>this.props.handleHide()}/>
+          <div className="dialog-shadow"/>
             <div className="dialog-overlay">
               {this.props.content}
             </div>

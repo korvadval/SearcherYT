@@ -239,3 +239,61 @@ body {
   top: 112px;
   right: 95px;
 }
+.selectField {
+  border-radius: 5px;
+  height: 25px;
+  outline: 0;
+}
+.rangeSlider {
+  width: 100%;
+}
+.mainDialogWindow {
+  display: flex;
+  flex-flow: column;
+}
+.headerDialogWindow {
+  font-size: larger;
+  width: max-content;
+}
+.labelDialogWindow {
+  font-size: medium;
+  margin-bottom: 5px;
+}
+.inputDialogWindow {
+  border-radius: 5px;
+  outline: 0;
+  border-color: silver;
+  border-width: 1px;
+  height: 20px;
+}
+.fieldDialogWindow {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: stretch;
+  margin: 5px 0 5px 0;
+}
+.buttonDialogWindow {
+  height: 30px;
+  width: 45%;
+  border-radius: 5px;
+  border-color: silver;
+  border-width: 2px;
+  background-color: silver;
+}
+.rangeSliderField {
+  display: flex;
+}
+.sliderValue {
+  width: 30px;
+  text-align: center;
+  border-radius: 5px;
+  border-width: 1px;
+  border-color: silver;
+}
+.buttonsFieldDialogWindow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 10px 0 0 0;
+}
